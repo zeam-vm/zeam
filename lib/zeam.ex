@@ -146,7 +146,22 @@ defmodule Zeam do
     end
   end
 
+  @doc """
+  This reads binary (a sequence of bytes) and generates a list of integers that each value is regarded as a 24 bits (3 bytes) in little endian.
 
+  ## Parameter
+
+  - binary: is a binary to read
+
+  ## Examples
+
+    iex> Zeam.toAddressInLittleEndian(<<0, 1, 2, 3>>)
+    [131328, 197121]
+  """
+  @spec toAddressInLittleEndian(binary) :: list
+  def toAddressInLittleEndian(binary) do
+    Enum.map(binary |> bin2list |> bundle3Values, fn(x) -> concatLittleEndian(x) end)
+  end
 
   @doc """
   This dumps binary files to stdard output.
