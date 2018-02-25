@@ -164,6 +164,23 @@ defmodule Zeam do
   end
 
   @doc """
+  This reads binary (a sequence of bytes) and generates a list of integers that each value is regarded as a 24 bits (3 bytes) in big endian.
+
+  ## Parameter
+
+  - binary: is a binary to read
+
+  ## Examples
+
+    iex> Zeam.toAddressInBigEndian(<<0, 1, 2, 3>>)
+    [258, 66051]
+  """
+  @spec toAddressInBigEndian(binary) :: list
+  def toAddressInBigEndian(binary) do
+    Enum.map(binary |> bin2list |> bundle3Values, fn(x) -> concatBigEndian(x) end)
+  end
+
+  @doc """
   This dumps binary files to stdard output.
 
   ## Parameter
