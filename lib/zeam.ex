@@ -109,6 +109,26 @@ defmodule Zeam do
   end
 
   @doc """
+  This reverse a list.
+
+  ## Parameter
+
+  - list: is a list to reverse
+
+  ## Examples
+
+    iex> Zeam.reverseList([0, 1, 2])
+    [2, 1, 0]
+  """
+  @spec reverseList(list) :: list
+  def reverseList(list) do
+    case list do
+      [] -> []
+      [a | r] -> reverseList(r) ++ [a]
+    end
+  end
+
+  @doc """
   This dumps binary files to stdard output.
 
   ## Parameter
