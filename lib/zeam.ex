@@ -1,7 +1,7 @@
 defmodule Zeam do
   @moduledoc """
   Zeam is a module of ZEAM. ZEAM is ZACKY's Elixir Abstract Machine, which is aimed at being BEAM compatible.
-  Zeam now provides `dump/1` `dump_p/1` `dump_f/1` `dump_d/1` and `last2/1` functions. 
+  Zeam now provides bytecode analyzing functions. 
   """
 
   @tags [
