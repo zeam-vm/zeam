@@ -64,6 +64,29 @@ defmodule Zeam do
   end 
 
   @doc """
+  This bundles three values away from each value of a list.
+
+  ## Parameter
+
+  - list: is a list to bundle.
+
+  ## Examples
+
+    iex> Zeam.bundle3Values([0, 1, 2, 3])
+    [[0, 1, 2], [1, 2, 3]]
+  """
+  @spec bundle3Values(list) :: list
+  def bundle3Values(list) do
+    case list do
+      [] -> []
+      [a] -> []
+      [a, b] -> []
+      [a, b, c] -> [[a, b, c]]
+      [a, b, c | r] -> [[a, b, c]] ++ bundle3Values([b, c] ++ r)
+    end
+  end
+
+  @doc """
   This dumps binary files to stdard output.
 
   ## Parameter
