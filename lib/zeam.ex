@@ -109,7 +109,25 @@ defmodule Zeam do
   end
 
   @doc """
-  This reverse a list.
+  This concats a list of integer in the manner of big endian.
+
+  ## Parameter
+
+  - list: is a list of integer to concat
+
+
+  ## Examples
+
+    iex> Integer.to_string(Zeam.concatBigEndian([0, 1, 2]), 16)
+    "102"
+  """
+  @spec concatBigEndian(list) :: integer
+  def concatBigEndian(list) do
+    list |> reverseList |> concatLittleEndian
+  end
+
+  @doc """
+  This reverses a list.
 
   ## Parameter
 
@@ -127,6 +145,8 @@ defmodule Zeam do
       [a | r] -> reverseList(r) ++ [a]
     end
   end
+
+
 
   @doc """
   This dumps binary files to stdard output.
