@@ -1,7 +1,7 @@
 defmodule Zeam do
   @moduledoc """
   Zeam is a module of ZEAM. ZEAM is ZACKY's Elixir Abstract Machine, which is aimed at being BEAM compatible.
-  Zeam now provides `dump/1` `dump_p/1` `dump_f/1` `dump_d/1` and `last2/1` functions. 
+  Zeam now provides bytecode analyzing functions. 
   """
 
   @tags [
@@ -39,6 +39,145 @@ defmodule Zeam do
   """
   def hello do
     "ZEAM is ZACKY's Elixir Abstract Machine, which is aimed at being BEAM compatible."
+  end
+
+  @doc """
+  This converts a binary into a list.
+
+  ## Parameter
+
+  - binary: is a binary to convert into a list.
+
+  ## Examples
+
+    iex> Zeam.bin2list(<<0, 1, 2, 3>>)
+    [0, 1, 2, 3]
+
+  """
+  @spec bin2list(binary) :: list
+  def bin2list(binary) do
+    case binary do
+      <<>> -> :ok
+      <<x :: integer>> -> [x]
+      <<x :: integer, y :: binary>> -> [x] ++ bin2list(y)
+    end
+  end 
+
+  @doc """
+  This bundles three values away from each value of a list.
+
+  ## Parameter
+
+  - list: is a list to bundle.
+
+  ## Examples
+
+    iex> Zeam.bundle3Values([0, 1, 2, 3])
+    [[0, 1, 2], [1, 2, 3]]
+  """
+  @spec bundle3Values(list) :: list
+  def bundle3Values(list) do
+    case list do
+      [] -> []
+      [a] -> []
+      [a, b] -> []
+      [a, b, c] -> [[a, b, c]]
+      [a, b, c | r] -> [[a, b, c]] ++ bundle3Values([b, c] ++ r)
+    end
+  end
+
+  @doc """
+  This concats a list of integer in the manner of little endian.
+
+  ## Parameter
+
+  - list: is a list of integer to concat
+
+
+  ## Examples
+
+    iex> Integer.to_string(Zeam.concatLittleEndian([0, 1, 2]), 16)
+    "20100"
+  """
+  @spec concatLittleEndian(list) :: integer
+  def concatLittleEndian(list) do
+    case list do
+      [] -> 0
+      [a] -> a
+      [a | r] -> a + concatLittleEndian(r) * 256
+    end
+  end
+
+  @doc """
+  This concats a list of integer in the manner of big endian.
+
+  ## Parameter
+
+  - list: is a list of integer to concat
+
+
+  ## Examples
+
+    iex> Integer.to_string(Zeam.concatBigEndian([0, 1, 2]), 16)
+    "102"
+  """
+  @spec concatBigEndian(list) :: integer
+  def concatBigEndian(list) do
+    list |> reverseList |> concatLittleEndian
+  end
+
+  @doc """
+  This reverses a list.
+
+  ## Parameter
+
+  - list: is a list to reverse
+
+  ## Examples
+
+    iex> Zeam.reverseList([0, 1, 2])
+    [2, 1, 0]
+  """
+  @spec reverseList(list) :: list
+  def reverseList(list) do
+    case list do
+      [] -> []
+      [a | r] -> reverseList(r) ++ [a]
+    end
+  end
+
+  @doc """
+  This reads binary (a sequence of bytes) and generates a list of integers that each value is regarded as a 24 bits (3 bytes) in little endian.
+
+  ## Parameter
+
+  - binary: is a binary to read
+
+  ## Examples
+
+    iex> Zeam.toAddressInLittleEndian(<<0, 1, 2, 3>>)
+    [131328, 197121]
+  """
+  @spec toAddressInLittleEndian(binary) :: list
+  def toAddressInLittleEndian(binary) do
+    Enum.map(binary |> bin2list |> bundle3Values, fn(x) -> concatLittleEndian(x) end)
+  end
+
+  @doc """
+  This reads binary (a sequence of bytes) and generates a list of integers that each value is regarded as a 24 bits (3 bytes) in big endian.
+
+  ## Parameter
+
+  - binary: is a binary to read
+
+  ## Examples
+
+    iex> Zeam.toAddressInBigEndian(<<0, 1, 2, 3>>)
+    [258, 66051]
+  """
+  @spec toAddressInBigEndian(binary) :: list
+  def toAddressInBigEndian(binary) do
+    Enum.map(binary |> bin2list |> bundle3Values, fn(x) -> concatBigEndian(x) end)
   end
 
   @doc """
