@@ -42,6 +42,28 @@ defmodule Zeam do
   end
 
   @doc """
+  This converts a binary into a list.
+
+  ## Parameter
+
+  - binary: is a binary to convert into a list.
+
+  ## Examples
+
+    iex> Zeam.bin2list(<<0, 1, 2, 3>>)
+    [0, 1, 2, 3]
+
+  """
+  @spec bin2list(binary) :: list
+  def bin2list(binary) do
+    case binary do
+      <<>> -> :ok
+      <<x :: integer>> -> [x]
+      <<x :: integer, y :: binary>> -> [x] ++ bin2list(y)
+    end
+  end 
+
+  @doc """
   This dumps binary files to stdard output.
 
   ## Parameter
