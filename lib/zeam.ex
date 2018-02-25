@@ -87,6 +87,28 @@ defmodule Zeam do
   end
 
   @doc """
+  This concats a list of integer in the manner of little endian.
+
+  ## Parameter
+
+  - list: is a list of integer to concat
+
+
+  ## Examples
+
+    iex> Integer.to_string(Zeam.concatLittleEndian([0, 1, 2]), 16)
+    "20100"
+  """
+  @spec concatLittleEndian(list) :: integer
+  def concatLittleEndian(list) do
+    case list do
+      [] -> 0
+      [a] -> a
+      [a | r] -> a + concatLittleEndian(r) * 256
+    end
+  end
+
+  @doc """
   This dumps binary files to stdard output.
 
   ## Parameter
