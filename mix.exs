@@ -4,7 +4,7 @@ defmodule Zeam.MixProject do
   def project do
     [
       app: :zeam,
-      version: "0.0.2",
+      version: "0.0.3",
       elixir: "~> 1.6",
       description: "ZEAM is ZACKY's Elixir Abstract Machine, which is aimed at being BEAM compatible.",
       package: [
