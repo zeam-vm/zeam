@@ -79,8 +79,8 @@ defmodule Zeam do
   def bundle3Values(list) do
     case list do
       [] -> []
-      [a] -> []
-      [a, b] -> []
+      [_] -> []
+      [_, _] -> []
       [a, b, c] -> [[a, b, c]]
       [a, b, c | r] -> [[a, b, c]] ++ bundle3Values([b, c] ++ r)
     end
