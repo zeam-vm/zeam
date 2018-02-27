@@ -216,6 +216,62 @@ defmodule Zeam do
   end
 
   @doc """
+  This returns list of absolute addresses.
+
+  ## Parameter
+
+  - function: is one of concat{Little/Big}Endian/1.
+  - binary: is a binary to read.
+
+  ## Examples
+
+    iex> Zeam.toAbsoluteAddress(&Zeam.concatLittleEndian/1, <<0, 1, 2, 3>>)
+    [131328, 197122]
+
+    iex> Zeam.toAbsoluteAddress(&Zeam.concatBigEndian/1, <<0, 1, 2, 3>>)
+    [258, 66052]
+  """
+  @spec toAbsoluteAddress(function, binary) :: list
+  def toAbsoluteAddress(function, binary) when is_function(function, 1) do
+    for x <- Enum.with_index(toAddress(function, binary)), do: elem(x, 0) + elem(x, 1)
+  end
+
+  @doc """
+  This returns list of absolute addresses in little endian.
+
+  ## Parameter
+
+  - binary: is a binary to read.
+
+  ## Examples
+
+    iex> Zeam.toAbsoluteAddressInLittleEndian(<<0, 1, 2, 3>>)
+    [131328, 197122]
+  """
+  @spec toAbsoluteAddressInLittleEndian(binary) :: list
+  def toAbsoluteAddressInLittleEndian(binary) do
+  	toAbsoluteAddress(&Zeam.concatLittleEndian/1, binary)
+  end
+
+  @doc """
+  This returns list of absolute addresses in big endian.
+
+  ## Parameter
+
+  - binary: is a binary to read.
+
+  ## Examples
+
+    iex> Zeam.toAbsoluteAddressInBigEndian(<<0, 1, 2, 3>>)
+    [258, 66052]
+  """
+  @spec toAbsoluteAddressInBigEndian(binary) :: list
+  def toAbsoluteAddressInBigEndian(binary) do
+  	toAbsoluteAddress(&Zeam.concatBigEndian/1, binary)
+  end
+
+
+  @doc """
   This dumps binary files to stdard output.
 
   ## Parameter
