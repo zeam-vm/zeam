@@ -182,10 +182,16 @@ defmodule Zeam do
 
     iex> Zeam.toAddressInBigEndian(<<0, 1, 2, 3>>)
     [258, 66051]
+
+    iex> Zeam.toAddressInBigEndian(<<255, 255, 255>>)
+    [-1]
+
+    iex> Zeam.toAddressInBigEndian(<<255, 255, 254>>)
+    [-2]
   """
   @spec toAddressInBigEndian(binary) :: list
   def toAddressInBigEndian(binary) do
-    Enum.map(binary |> bin2list |> bundle3Values, fn(x) -> concatBigEndian(x) end)
+    for y <- (for x <- (binary |> bin2list |> bundle3Values), do: concatBigEndian(x)), do: (if y < ((1 <<< 23) - 1) do y else (y - (1 <<< 24)) end)
   end
 
   @doc """
