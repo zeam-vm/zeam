@@ -1,3 +1,5 @@
+use Bitwise
+
 defmodule Zeam do
   @moduledoc """
   Zeam is a module of ZEAM. ZEAM is ZACKY's Elixir Abstract Machine, which is aimed at being BEAM compatible.
@@ -157,10 +159,16 @@ defmodule Zeam do
 
     iex> Zeam.toAddressInLittleEndian(<<0, 1, 2, 3>>)
     [131328, 197121]
+
+    iex> Zeam.toAddressInLittleEndian(<<255, 255, 255>>)
+    [-1]
+
+    iex> Zeam.toAddressInLittleEndian(<<254, 255, 255>>)
+    [-2]
   """
   @spec toAddressInLittleEndian(binary) :: list
   def toAddressInLittleEndian(binary) do
-    Enum.map(binary |> bin2list |> bundle3Values, fn(x) -> concatLittleEndian(x) end)
+    for y <- (for x <- (binary |> bin2list |> bundle3Values), do: concatLittleEndian(x)), do: (if y < ((1 <<< 23) - 1) do y else (y - (1 <<< 24)) end)
   end
 
   @doc """
