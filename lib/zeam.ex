@@ -1,3 +1,5 @@
+use Bitwise
+
 defmodule Zeam do
   @moduledoc """
   Zeam is a module of ZEAM. ZEAM is ZACKY's Elixir Abstract Machine, which is aimed at being BEAM compatible.
@@ -157,10 +159,16 @@ defmodule Zeam do
 
     iex> Zeam.toAddressInLittleEndian(<<0, 1, 2, 3>>)
     [131328, 197121]
+
+    iex> Zeam.toAddressInLittleEndian(<<255, 255, 255>>)
+    [-1]
+
+    iex> Zeam.toAddressInLittleEndian(<<254, 255, 255>>)
+    [-2]
   """
   @spec toAddressInLittleEndian(binary) :: list
   def toAddressInLittleEndian(binary) do
-    Enum.map(binary |> bin2list |> bundle3Values, fn(x) -> concatLittleEndian(x) end)
+    toAddress(&Zeam.concatLittleEndian/1, binary)
   end
 
   @doc """
@@ -174,11 +182,94 @@ defmodule Zeam do
 
     iex> Zeam.toAddressInBigEndian(<<0, 1, 2, 3>>)
     [258, 66051]
+
+    iex> Zeam.toAddressInBigEndian(<<255, 255, 255>>)
+    [-1]
+
+    iex> Zeam.toAddressInBigEndian(<<255, 255, 254>>)
+    [-2]
   """
   @spec toAddressInBigEndian(binary) :: list
   def toAddressInBigEndian(binary) do
-    Enum.map(binary |> bin2list |> bundle3Values, fn(x) -> concatBigEndian(x) end)
+    toAddress(&Zeam.concatBigEndian/1, binary)
   end
+
+  @doc """
+  This provides Template Method of toAddress{Little/Big}Endian/1.
+
+  ## Parameter
+
+  - function: is one of concat{Little/Big}Endian/1.
+  - binary: is a binary to read.
+
+  ## Examples
+
+  	iex> Zeam.toAddress(&Zeam.concatLittleEndian/1, <<0, 1, 2, 3>>)
+  	[131328, 197121]
+
+  	iex> Zeam.toAddress(&Zeam.concatBigEndian/1, <<0, 1, 2, 3>>)
+  	[258, 66051]
+  """
+  @spec toAddress(function, binary) :: list
+  def toAddress(function, binary) when is_function(function, 1) do
+  	for y <- (for x <- (binary |> bin2list |> bundle3Values), do: function.(x)), do: (if y < ((1 <<< 23) -1) do y else (y - (1 <<< 24)) end)
+  end
+
+  @doc """
+  This returns list of absolute addresses.
+
+  ## Parameter
+
+  - function: is one of concat{Little/Big}Endian/1.
+  - binary: is a binary to read.
+
+  ## Examples
+
+    iex> Zeam.toAbsoluteAddress(&Zeam.concatLittleEndian/1, <<0, 1, 2, 3>>)
+    [131328, 197122]
+
+    iex> Zeam.toAbsoluteAddress(&Zeam.concatBigEndian/1, <<0, 1, 2, 3>>)
+    [258, 66052]
+  """
+  @spec toAbsoluteAddress(function, binary) :: list
+  def toAbsoluteAddress(function, binary) when is_function(function, 1) do
+    for x <- Enum.with_index(toAddress(function, binary)), do: elem(x, 0) + elem(x, 1)
+  end
+
+  @doc """
+  This returns list of absolute addresses in little endian.
+
+  ## Parameter
+
+  - binary: is a binary to read.
+
+  ## Examples
+
+    iex> Zeam.toAbsoluteAddressInLittleEndian(<<0, 1, 2, 3>>)
+    [131328, 197122]
+  """
+  @spec toAbsoluteAddressInLittleEndian(binary) :: list
+  def toAbsoluteAddressInLittleEndian(binary) do
+  	toAbsoluteAddress(&Zeam.concatLittleEndian/1, binary)
+  end
+
+  @doc """
+  This returns list of absolute addresses in big endian.
+
+  ## Parameter
+
+  - binary: is a binary to read.
+
+  ## Examples
+
+    iex> Zeam.toAbsoluteAddressInBigEndian(<<0, 1, 2, 3>>)
+    [258, 66052]
+  """
+  @spec toAbsoluteAddressInBigEndian(binary) :: list
+  def toAbsoluteAddressInBigEndian(binary) do
+  	toAbsoluteAddress(&Zeam.concatBigEndian/1, binary)
+  end
+
 
   @doc """
   This dumps binary files to stdard output.
