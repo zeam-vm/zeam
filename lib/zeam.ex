@@ -168,7 +168,7 @@ defmodule Zeam do
   """
   @spec toAddressInLittleEndian(binary) :: list
   def toAddressInLittleEndian(binary) do
-    for y <- (for x <- (binary |> bin2list |> bundle3Values), do: concatLittleEndian(x)), do: (if y < ((1 <<< 23) - 1) do y else (y - (1 <<< 24)) end)
+    toAddress(&Zeam.concatLittleEndian/1, binary)
   end
 
   @doc """
@@ -191,7 +191,28 @@ defmodule Zeam do
   """
   @spec toAddressInBigEndian(binary) :: list
   def toAddressInBigEndian(binary) do
-    for y <- (for x <- (binary |> bin2list |> bundle3Values), do: concatBigEndian(x)), do: (if y < ((1 <<< 23) - 1) do y else (y - (1 <<< 24)) end)
+    toAddress(&Zeam.concatBigEndian/1, binary)
+  end
+
+  @doc """
+  This provides Template Method of toAddress{Little/Big}Endian/1.
+
+  ## Parameter
+
+  - function: is one of concat{Little/Big}Endian/1.
+  - binary: is a binary to read.
+
+  ## Examples
+
+  	iex> Zeam.toAddress(&Zeam.concatLittleEndian/1, <<0, 1, 2, 3>>)
+  	[131328, 197121]
+
+  	iex> Zeam.toAddress(&Zeam.concatBigEndian/1, <<0, 1, 2, 3>>)
+  	[258, 66051]
+  """
+  @spec toAddress(function, binary) :: list
+  def toAddress(function, binary) when is_function(function, 1) do
+  	for y <- (for x <- (binary |> bin2list |> bundle3Values), do: function.(x)), do: (if y < ((1 <<< 23) -1) do y else (y - (1 <<< 24)) end)
   end
 
   @doc """
