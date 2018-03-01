@@ -337,6 +337,73 @@ defmodule Zeam do
   	toAddressOfOriginAndTarget(&Zeam.concatBigEndian/1, binary)
   end
 
+  @doc """
+  This returns a sorted list of tupples of absolute addresses of the origin and the target in order of the target address.
+
+  ## Parameter
+
+  - function: is one of concat{Little/Big}Endian/1.
+  - binary: is a binary to read.
+
+  ## Examples
+
+  	iex> Zeam.toSortedListOfAddressOfOriginAndTarget(&Zeam.concatLittleEndian/1, <<0, 0, 0>>)
+  	[{0, 0}]
+
+  	iex> Zeam.toSortedListOfAddressOfOriginAndTarget(&Zeam.concatLittleEndian/1, <<1, 0, 0, 0>>)
+  	[{1, 1}, {0, 1}]
+
+  	iex> Zeam.toSortedListOfAddressOfOriginAndTarget(&Zeam.concatBigEndian/1, <<0, 0, 0>>)
+  	[{0, 0}]
+
+  	iex> Zeam.toSortedListOfAddressOfOriginAndTarget(&Zeam.concatBigEndian/1, <<0, 0, 1, 0>>)
+  	[{0, 1}, {1, 257}]
+  """
+  @spec toSortedListOfAddressOfOriginAndTarget(function, binary) :: list
+  def toSortedListOfAddressOfOriginAndTarget(function, binary) when is_function(function, 1) do
+  	Enum.sort(toAddressOfOriginAndTarget(function, binary), fn(a, b) -> elem(a, 1) < elem(b, 1) end)
+  end
+
+  @doc """
+  This returns a sorted list of tupples of absolute addresses in little endian of the origin and the target in order of the target address.
+
+  ## Parameter
+
+  - binary: is a binary to read.
+
+  ## Examples
+
+  	iex> Zeam.toSortedListOfAddressInLittleEndianOfOriginAndTarget(<<0, 0, 0>>)
+  	[{0, 0}]
+
+  	iex> Zeam.toSortedListOfAddressInLittleEndianOfOriginAndTarget(<<1, 0, 0, 0>>)
+  	[{1, 1}, {0, 1}]
+  """
+  @spec toSortedListOfAddressInLittleEndianOfOriginAndTarget(binary) :: list
+  def toSortedListOfAddressInLittleEndianOfOriginAndTarget(binary) do
+  	toSortedListOfAddressOfOriginAndTarget(&Zeam.concatLittleEndian/1, binary)
+  end
+
+  @doc """
+  This returns a sorted list of tupples of absolute addresses in big endian of the origin and the target in order of the target address.
+
+  ## Parameter
+
+  - binary: is a binary to read.
+
+  ## Examples
+
+  	iex> Zeam.toSortedListOfAddressInBigEndianOfOriginAndTarget(<<0, 0, 0>>)
+  	[{0, 0}]
+
+  	iex> Zeam.toSortedListOfAddressInBigEndianOfOriginAndTarget(<<0, 0, 1, 0>>)
+  	[{0, 1}, {1, 257}]
+  """
+  @spec toSortedListOfAddressInBigEndianOfOriginAndTarget(binary) :: list
+  def toSortedListOfAddressInBigEndianOfOriginAndTarget(binary) do
+  	toSortedListOfAddressOfOriginAndTarget(&Zeam.concatBigEndian/1, binary)
+  end
+
 
   @doc """
   This dumps binary files to stdard output.
