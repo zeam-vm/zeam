@@ -270,6 +270,73 @@ defmodule Zeam do
   	toAbsoluteAddress(&Zeam.concatBigEndian/1, binary)
   end
 
+  @doc """
+  This returns a list of tupples of absolute addresses of the origin and the target.
+
+  ## Parameter
+
+  - function: is one of concat{Little/Big}Endian/1.
+  - binary: is a binary to read.
+
+  ## Examples
+
+    iex> Zeam.toAddressOfOriginAndTarget(&Zeam.concatLittleEndian/1, <<0, 0, 0>>)
+    [{0, 0}]
+
+    iex> Zeam.toAddressOfOriginAndTarget(&Zeam.concatLittleEndian/1, <<1, 0, 0, 0>>)
+    [{0, 1}, {1, 1}]
+
+    iex> Zeam.toAddressOfOriginAndTarget(&Zeam.concatBigEndian/1, <<0, 0, 0>>)
+    [{0, 0}]
+
+    iex> Zeam.toAddressOfOriginAndTarget(&Zeam.concatBigEndian/1, <<0, 0, 1, 0>>)
+    [{0, 1}, {1, 257}]
+  """
+  @spec toAddressOfOriginAndTarget(function, binary) :: list
+  def toAddressOfOriginAndTarget(function, binary) when is_function(function, 1) do
+	for x <- toAbsoluteAddress(function, binary) |> Enum.with_index, do: {elem(x, 1), elem(x, 0)}
+  end
+
+  @doc """
+  This returns a list of tupples of absolute addresses in little endian of the origin and the target.
+
+  ## Parameter
+
+  - binary: is a binary to read.
+
+  ## Examples
+
+    iex> Zeam.toAddressInLittleEndianOfOriginAndTarget(<<0, 0, 0>>)
+    [{0, 0}]
+
+    iex> Zeam.toAddressInLittleEndianOfOriginAndTarget(<<1, 0, 0, 0>>)
+    [{0, 1}, {1, 1}]
+  """
+  @spec toAddressInLittleEndianOfOriginAndTarget(binary) :: list
+  def toAddressInLittleEndianOfOriginAndTarget(binary) do
+  	toAddressOfOriginAndTarget(&Zeam.concatLittleEndian/1, binary)
+  end
+
+  @doc """
+  This returns a list of tupples of absolute addresses in big endian of the origin and the target.
+
+  ## Parameter
+
+  - binary: is a binary to read.
+
+  ## Examples
+
+    iex> Zeam.toAddressInBigEndianOfOriginAndTarget(<<0, 0, 0>>)
+    [{0, 0}]
+
+    iex> Zeam.toAddressInBigEndianOfOriginAndTarget(<<0, 0, 1, 0>>)
+    [{0, 1}, {1, 257}]
+  """
+  @spec toAddressInBigEndianOfOriginAndTarget(binary) :: list
+  def toAddressInBigEndianOfOriginAndTarget(binary) do
+  	toAddressOfOriginAndTarget(&Zeam.concatBigEndian/1, binary)
+  end
+
 
   @doc """
   This dumps binary files to stdard output.
