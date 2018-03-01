@@ -404,6 +404,55 @@ defmodule Zeam do
   	toSortedListOfAddressOfOriginAndTarget(&Zeam.concatBigEndian/1, binary)
   end
 
+  @doc """
+  This calls a function with a path, and puts to IO.
+
+  ## Parameter
+
+  - function: is a function that receives the path
+  - path: is data or a binary file path
+
+  """
+  @spec put(function, Path.t()) :: String.t()
+  def put(function, path) when is_function(function, 1) do
+    IO.puts openAndCall(function, path)
+  end
+
+  @doc """
+  This opens the file of a path and calls a function.
+
+  ## Parameter
+
+  - function: is a function that receives the path
+  - path: is data or a binary file path to dump.
+
+  ## Examples
+
+  """
+  @spec openAndCall(function, Path.t()) :: String.t()
+  def openAndCall(function, path) when is_function(function, 1) do
+    {:ok, file} = File.open path, [:read]
+    readFile(function, file)
+  end
+
+  @doc """
+  This dumps binary files to String.
+
+  ## Parameter
+
+  - function: is a function that receives the path
+  - file: is data or a binary file path to dump.
+
+  """
+  @spec readFile(function, File.t()) :: String.t()
+  def readFile(function, file) when is_function(function, 1) do
+    case IO.binread(file, 8) do
+      {:error, reason} -> {:error, reason} 
+      :eof -> "\n"
+      data -> "#{function.(data)}\n#{readFile(function, file)}"
+    end
+  end
+
 
   @doc """
   This dumps binary files to stdard output.
@@ -415,7 +464,7 @@ defmodule Zeam do
   """
   @spec dump(Path.t()) :: String.t()
   def dump(path) do
-    IO.puts dump_p(path)
+    put(&Zeam.dump_d/1, path)
   end
 
   @doc """
@@ -433,8 +482,7 @@ defmodule Zeam do
   """
   @spec dump_p(Path.t()) :: String.t()
   def dump_p(path) do
-    {:ok, file} = File.open path, [:read]
-    dump_f(file)
+  	openAndCall(&Zeam.dump_d/1, path)
   end
 
   @doc """
@@ -447,11 +495,7 @@ defmodule Zeam do
   """
   @spec dump_f(File.t()) :: String.t()
   def dump_f(file) do
-    case IO.binread(file, 8) do
-      {:error, reason} -> {:error, reason} 
-      :eof -> "\n"
-      data -> "#{dump_d(data)}\n#{dump_f(file)}"
-    end
+  	readFile(&Zeam.dump_d/1, file)
   end
 
 
