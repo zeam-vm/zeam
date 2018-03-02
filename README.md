@@ -10,7 +10,7 @@ by adding `zeam` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:zeam, "~> 0.0.4"}
+    {:zeam, "~> 0.0.5"}
   ]
 end
 ```
