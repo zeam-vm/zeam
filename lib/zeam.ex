@@ -59,7 +59,7 @@ defmodule Zeam do
   @spec bin2list(binary) :: list
   def bin2list(binary) do
     case binary do
-      <<>> -> :ok
+      <<>> -> []
       <<x :: integer>> -> [x]
       <<x :: integer, y :: binary>> -> [x] ++ bin2list(y)
     end
@@ -425,9 +425,6 @@ defmodule Zeam do
 
   - function: is a function that receives the path
   - path: is data or a binary file path to dump.
-
-  ## Examples
-
   """
   @spec openAndCall(function, Path.t()) :: String.t()
   def openAndCall(function, path) when is_function(function, 1) do
@@ -446,13 +443,128 @@ defmodule Zeam do
   """
   @spec readFile(function, File.t()) :: String.t()
   def readFile(function, file) when is_function(function, 1) do
-    case IO.binread(file, 8) do
+    case IO.binread(file, :all) do
       {:error, reason} -> {:error, reason} 
-      :eof -> "\n"
+      :eof -> ""
+      "" -> ""
       data -> "#{function.(data)}\n#{readFile(function, file)}"
     end
   end
 
+  @doc """
+  This prints a tuple of addresses of the origin and the target
+
+  ## Parameter
+
+  - x: is a tuple including addresses of the origin and the target.
+
+  ## Examples
+
+  iex> Zeam.printElem({0, 0})
+  "{0, 0}"
+
+  iex> Zeam.printElem({0, -1})
+  ""
+
+  """
+  @spec printElem(tuple) :: String.t()
+  def printElem(x) do
+  	if elem(x, 1) < 0 do
+  	  ""
+  	else
+  	  "{#{Integer.to_string(elem(x, 0), 16)}, #{Integer.to_string(elem(x, 1), 16)}}"
+  	end
+  end
+
+  @doc """
+  This calls a function with a binary, obtains a list of tuples, and prints it.
+
+  ## Parameter
+
+  - function: is a function to call with a binary.
+  - binary: is a binary to be converted by the function.
+  """
+  @spec printTupleList(function, binary) :: String.t()
+  def printTupleList(function, binary) when is_function(function, 1) do
+  	for x <- function.(binary), do: printElem(x)
+  end
+
+  @doc """
+  This prints a sorted list of addresses in little endian of the origin and target from a binary.
+
+  ## Parameter
+
+  - binary: is a binary to print the list.
+
+  ## Examples
+
+  iex> Zeam.printSortedListInLittleEndian(<<0, 0, 0, 0>>)
+  ["{0, 0}", "{1, 1}"]
+
+  iex> Zeam.printSortedListInLittleEndian(<<1, 0, 0, 0>>)
+  ["{1, 1}", "{0, 1}"]
+
+  """
+  @spec printSortedListInLittleEndian(binary) :: String.t()
+  def printSortedListInLittleEndian(binary) do
+  	printTupleList(&Zeam.toSortedListOfAddressInLittleEndianOfOriginAndTarget/1, binary)
+  end
+
+  @doc """
+  This prints a sorted list of addresses in big endian of the origin and target from a binary.
+
+  ## Parameter
+
+  - binary: is a binary to print the list.
+
+  ## Examples
+
+  iex> Zeam.printSortedListInBigEndian(<<0, 0, 0, 0>>)
+  ["{0, 0}", "{1, 1}"]
+
+  iex> Zeam.printSortedListInBigEndian(<<0, 0, 1, 0>>)
+  ["{0, 1}", "{1, 101}"]
+  """
+  @spec printSortedListInBigEndian(binary) :: String.t()
+  def printSortedListInBigEndian(binary) do
+  	printTupleList(&Zeam.toSortedListOfAddressInBigEndianOfOriginAndTarget/1, binary)
+  end
+
+  @doc """
+  This puts a sorted list of addresses in little endian of the origin and the target from the binary read from the file of a path.
+
+  ## Parameter
+
+  - path: is data or a binary file path to put.
+
+  ## Examples
+
+  iex> Zeam.putAddressInLittleEndian("./test/sample")
+  "{0, 434241}{1, 444343}{2, 454445}{3, 464547}{4, 474649}{5, 48474B}{6, 49484D}{7, 4A494F}{8, 4B4A51}{9, 4C4B53}{A, 4D4C55}{B, 4E4D57}\n"
+
+  """
+  @spec putAddressInLittleEndian(Path.t()) :: String.t()
+  def putAddressInLittleEndian(path) do
+  	openAndCall(&Zeam.printSortedListInLittleEndian/1, path)
+  end
+
+  @doc """
+  This puts a sorted list of addresses in big endian of the origin and the target from the binary read from the file of a path.
+
+  ## Parameter
+
+  - path: is data or a binary file path to put.
+
+  ## Examples
+
+  iex> Zeam.putAddressInBigEndian("./test/sample")
+  "{0, 414243}{1, 424345}{2, 434447}{3, 444549}{4, 45464B}{5, 46474D}{6, 47484F}{7, 484951}{8, 494A53}{9, 4A4B55}{A, 4B4C57}{B, 4C4D59}\n"
+
+  """
+  @spec putAddressInBigEndian(Path.t()) :: String.t()
+  def putAddressInBigEndian(path) do
+  	openAndCall(&Zeam.printSortedListInBigEndian/1, path)
+  end
 
   @doc """
   This dumps binary files to stdard output.
@@ -482,7 +594,8 @@ defmodule Zeam do
   """
   @spec dump_p(Path.t()) :: String.t()
   def dump_p(path) do
-  	openAndCall(&Zeam.dump_d/1, path)
+    {:ok, file} = File.open path, [:read]
+    dump_f(file)
   end
 
   @doc """
@@ -495,7 +608,11 @@ defmodule Zeam do
   """
   @spec dump_f(File.t()) :: String.t()
   def dump_f(file) do
-  	readFile(&Zeam.dump_d/1, file)
+    case IO.binread(file, 8) do
+      {:error, reason} -> {:error, reason} 
+      :eof -> "\n"
+      data -> "#{dump_d(data)}\n#{dump_f(file)}"
+    end
   end
 
 
